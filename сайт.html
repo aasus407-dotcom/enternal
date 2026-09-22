@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTERNAL V2 — OSINT инструмент</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0d10'/%3E%3Ctext x='50' y='72' font-family='monospace' font-size='60' font-weight='800' fill='%234a8dff' text-anchor='middle'%3EE2%3C/text%3E%3C/svg%3E">
+<meta property="og:title" content="ENTERNAL V2 — OSINT инструмент">
+<meta property="og:description" content="Сбор информации по открытым источникам. Телефон, ник, email, IP, домен, Telegram, VK, TikTok.">
+<style>
+  :root{
+    --bg:#07090d; --bg2:#0d1219; --card:#10151e;
+    --border:#1e2633; --border-hi:#2a3648;
+    --text:#eef2f8; --muted:#8892a6; --dim:#5a6474;
+    --accent:#4a8dff; --accent2:#8b5cf6;
+    --green:#3ddc84; --red:#ef4444; --yellow:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,141,255,.12), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,.08), transparent 60%);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    min-height:100vh;
+    padding:0 20px 80px;
+  }
+  .wrap{max-width:1100px;margin:0 auto}
+
+  header{padding:60px 0 40px;text-align:center}
+  .logo{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 16px;margin-bottom:24px;
+    background:rgba(74,141,255,.08);
+    border:1px solid rgba(74,141,255,.25);
+    border-radius:999px;
+    color:var(--accent);
+    font-family:Consolas,monospace;
+    font-size:14px;letter-spacing:.05em;
+  }
+  .logo-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 12px var(--accent);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:.5;transform:scale(.85)}
+  }
+  h1{
+    font-size:clamp(36px,7vw,64px);
+    font-weight:800;letter-spacing:-0.035em;
+    line-height:1.05;margin-bottom:16px;
+    background:linear-gradient(180deg,#fff 0%,#a8b8d0 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .sub{color:var(--muted);font-size:17px;max-width:600px;margin:0 auto 32px;line-height:1.6}
+
+  .version-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:999px;
+    font-size:12px;color:var(--muted);
+    font-family:Consolas,monospace;
+    margin-bottom:24px;
+  }
+  .version-badge .tag{
+    padding:2px 8px;border-radius:6px;
+    background:var(--green);color:#000;
+    font-weight:700;font-size:11px;
+  }
+
+  .downloads{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;margin:40px 0;
+  }
+  .dl-card{
+    padding:22px;
+    background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    text-decoration:none;color:var(--text);
+    display:flex;flex-direction:column;gap:12px;
+    transition:.25s cubic-bezier(.2,.8,.3,1);
+  }
+  .dl-card:hover{
+    transform:translateY(-4px);
+    border-color:var(--accent);
+    box-shadow:0 12px 40px rgba(74,141,255,.2);
+  }
+  .dl-icon{
+    width:44px;height:44px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+  .dl-icon.win{background:linear-gradient(135deg,#0078d4,#00a4ef)}
+  .dl-icon.linux{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+  .dl-icon.mac{background:linear-gradient(135deg,#6b7280,#9ca3af)}
+  .dl-icon.src{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+  .dl-name{font-size:16px;font-weight:700}
+  .dl-desc{font-size:13px;color:var(--muted);line-height:1.5}
+  .dl-size{font-size:11px;color:var(--dim);font-family:Consolas,monospace;margin-top:auto}
+
+  section{padding:50px 0}
+  section h2{
+    font-size:clamp(24px,4vw,36px);
+    font-weight:800;letter-spacing:-0.025em;
+    margin-bottom:10px;text-align:center;
+  }
+  section .sub2{
+    text-align:center;color:var(--muted);
+    font-size:15px;margin-bottom:40px;
+  }
+
+  .features{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:18px;
+  }
+  .feat{
+    padding:24px;
+    background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    transition:.25s;
+  }
+  .feat:hover{
+    border-color:var(--border-hi);
+    transform:translateY(-3px);
+  }
+  .feat-icon{
+    width:44px;height:44px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:16px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+  }
+  .feat h3{font-size:17px;font-weight:700;margin-bottom:8px}
+  .feat p{font-size:14px;color:var(--muted);line-height:1.65}
+
+  .faq{max-width:800px;margin:0 auto}
+  .faq-item{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    margin-bottom:10px;overflow:hidden;
+    transition:.2s;
+  }
+  .faq-item:hover{border-color:var(--border-hi)}
+  .faq-item.open{
+    border-color:rgba(74,141,255,.4);
+    box-shadow:0 8px 32px rgba(74,141,255,.08);
+  }
+  .faq-q{
+    padding:20px 22px;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:15px;font-weight:600;
+    user-select:none;
+  }
+  .faq-q:hover{color:var(--accent)}
+  .faq-icon{
+    width:24px;height:24px;position:relative;flex-shrink:0;
+    transition:.3s;
+  }
+  .faq-icon::before,.faq-icon::after{
+    content:"";position:absolute;background:var(--accent);
+    border-radius:2px;transition:.3s;
+  }
+  .faq-icon::before{top:11px;left:4px;width:16px;height:2px}
+  .faq-icon::after{top:4px;left:11px;width:2px;height:16px}
+  .faq-item.open .faq-icon::after{transform:rotate(90deg);opacity:0}
+  .faq-item.open .faq-icon{transform:rotate(180deg)}
+  .faq-a{
+    max-height:0;overflow:hidden;
+    transition:max-height .35s cubic-bezier(.2,.8,.3,1);
+  }
+  .faq-item.open .faq-a{max-height:500px}
+  .faq-a-inner{padding:0 22px 22px;color:var(--muted);font-size:14px;line-height:1.75}
+  .faq-a-inner code{
+    background:var(--bg);
+    padding:2px 8px;border-radius:6px;
+    font-family:Consolas,monospace;
+    color:var(--green);font-size:13px;
+  }
+
+  .install-box{
+    max-width:800px;margin:0 auto;
+    padding:28px;
+    background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--border);
+    border-radius:16px;
+  }
+  .install-tabs{
+    display:flex;gap:6px;margin-bottom:20px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:14px;flex-wrap:wrap;
+  }
+  .install-tab{
+    padding:8px 16px;
+    background:transparent;
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--muted);
+    font-size:13px;font-weight:600;
+    cursor:pointer;transition:.2s;
+    font-family:inherit;
+  }
+  .install-tab:hover{color:var(--text)}
+  .install-tab.active{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;border-color:transparent;
+  }
+  .install-content{display:none}
+  .install-content.active{display:block}
+  .code-block{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 18px;
+    font-family:Consolas,monospace;
+    font-size:13px;color:var(--green);
+    line-height:1.7;
+    overflow-x:auto;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .code-block .copy{
+    position:absolute;top:12px;right:12px;
+    padding:4px 10px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--muted);
+    font-size:11px;cursor:pointer;
+    font-family:inherit;transition:.2s;
+  }
+  .code-block .copy:hover{color:var(--accent);border-color:var(--accent)}
+  .install-content p{
+    color:var(--muted);font-size:14px;
+    line-height:1.7;margin-bottom:12px;
+  }
+  .install-content ol{
+    padding-left:20px;
+    color:var(--muted);font-size:14px;
+    line-height:1.8;
+  }
+  .install-content ol li{margin-bottom:6px}
+
+  footer{
+    padding:50px 0 20px;text-align:center;
+    border-top:1px solid var(--border);
+    margin-top:60px;
+    color:var(--dim);font-size:13px;
+  }
+  footer a{color:var(--accent);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  .float-tg{
+    position:fixed;bottom:24px;right:24px;
+    width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#229ED9,#1E88C7);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 32px rgba(34,158,217,.5);
+    text-decoration:none;z-index:99;
+    transition:.3s cubic-bezier(.2,.8,.3,1);
+  }
+  .float-tg:hover{transform:scale(1.1) rotate(-6deg)}
+  .float-tg svg{width:28px;height:28px;color:#fff}
+
+  @media(max-width:640px){
+    .downloads{grid-template-columns:1fr}
+    .install-tabs{flex-direction:column}
+    .install-tab{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    enternal@v2
+  </div>
+  <div class="version-badge">
+    Версия <span id="currentVersion">2.0</span>
+    <span class="tag" id="newVersionTag" style="display:none">НОВАЯ</span>
+  </div>
+  <h1>ENTERNAL V2<br>OSINT инструмент</h1>
+  <p class="sub">Сбор информации по открытым источникам. Телефон, ник, email, IP, домен, Telegram, VK, TikTok, Discord. Всё в одной консольной программе.</p>
+</header>
+
+<div class="downloads">
+  <a class="dl-card" href="#" id="dlWindows" download>
+    <div class="dl-icon win">⊞</div>
+    <div class="dl-name">Windows</div>
+    <div class="dl-desc">.exe для Windows 10/11. Работает без Python.</div>
+    <div class="dl-size" id="sizeWin">~15 МБ</div>
+  </a>
+
+  <a class="dl-card" href="#" id="dlLinux" download>
+    <div class="dl-icon linux">🐧</div>
+    <div class="dl-name">Linux</div>
+    <div class="dl-desc">Один бинарник. Ubuntu, Debian, Arch.</div>
+    <div class="dl-size" id="sizeLinux">~12 МБ</div>
+  </a>
+
+  <a class="dl-card" href="#" id="dlMac" download>
+    <div class="dl-icon mac">⌘</div>
+    <div class="dl-name">macOS</div>
+    <div class="dl-desc">.app для macOS 12+. Apple Silicon и Intel.</div>
+    <div class="dl-size" id="sizeMac">~14 МБ</div>
+  </a>
+
+  <a class="dl-card" href="#" id="dlSource" download>
+    <div class="dl-icon src">📄</div>
+    <div class="dl-name">Исходник</div>
+    <div class="dl-desc">Python-скрипт. Запускается где угодно с Python 3.10+.</div>
+    <div class="dl-size" id="sizeSrc">~50 КБ</div>
+  </a>
+</div>
+
+<section>
+  <h2>Что умеет</h2>
+  <p class="sub2">30+ функций для сбора информации</p>
+
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">📱</div>
+      <h3>Телефон</h3>
+      <p>Страна, оператор, тип. Проверка WhatsApp, Telegram, Viber, Signal. 16 секций в большом доксе.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-icon">👤</div>
+      <h3>Ник</h3>
+      <p>Проверка по 21 соцсети: GitHub, Reddit, Twitter, Instagram, TikTok, Steam, Twitch и другие.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-icon">🌐</div>
+      <h3>Сеть и домены</h3>
+      <p>IP, домен, поддомены через crt.sh, SSL, DNS, HTTP-заголовки, robots.txt, Wayback.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-icon">💬</div>
+      <h3>Мессенджеры</h3>
+      <p>Telegram по нику и номеру, VK, TikTok, WhatsApp Business, Discord ID, Steam.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-icon">🛡</div>
+      <h3>Безопасность</h3>
+      <p>Прокси через Tor, режим паранойи, логи всех запросов, пароль на вход.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <h3>Экспорт</h3>
+      <p>Сохранение в .txt, JSON, HTML. Отправка результатов в Discord и Telegram через webhook.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Как запустить</h2>
+  <p class="sub2">Windows, Linux, macOS — один скрипт</p>
+
+  <div class="install-box">
+    <div class="install-tabs">
+      <button class="install-tab active" onclick="showTab('win', this)">Windows</button>
+      <button class="install-tab" onclick="showTab('linux', this)">Linux</button>
+      <button class="install-tab" onclick="showTab('mac', this)">macOS</button>
+      <button class="install-tab" onclick="showTab('source', this)">Исходник</button>
+    </div>
+
+    <div class="install-content active" id="tab-win">
+      <p>Скачай <strong>enternal.exe</strong> выше. Двойной клик — работает. Если антивирус ругается — добавь в исключения (это норма для неподписанных .exe).</p>
+      <ol>
+        <li>Скачай файл</li>
+        <li>Положи в удобную папку</li>
+        <li>Двойной клик по enternal.exe</li>
+      </ol>
+    </div>
+
+    <div class="install-content" id="tab-linux">
+      <p>Скачай бинарник, сделай исполняемым и запусти:</p>
+      <div class="code-block">
+chmod +x enternal
+./enternal
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+      <p>Или установи в систему:</p>
+      <div class="code-block">
+sudo cp enternal /usr/local/bin/
+enternal
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+    </div>
+
+    <div class="install-content" id="tab-mac">
+      <p>Скачай .app, распакуй. Если macOS блокирует:</p>
+      <div class="code-block">
+xattr -d com.apple.quarantine enternal.app
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+      <p>Или запусти из терминала:</p>
+      <div class="code-block">
+./enternal.app/Contents/MacOS/enternal
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+    </div>
+
+    <div class="install-content" id="tab-source">
+      <p>Скачай <strong>enternal.py</strong> и установи зависимости:</p>
+      <div class="code-block">
+pip install requests phonenumbers dnspython python-whois pytz
+python enternal.py
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+      <p>Работает везде, где есть Python 3.10+.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Частые вопросы</h2>
+  <p class="sub2">что спрашивают</p>
+
+  <div class="faq">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Это легально?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        Инструмент работает только с открытыми источниками — публичные API, поисковики, сайты. Ничего не взламывает, не пробивает закрытые базы. Использование в личных целях (проверить свою утечку, свой номер, свой домен) — законно. Против других без согласия — вопрос морали и местных законов.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Антивирус ругается</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        Это норма для неподписанных .exe из Python. PyInstaller-сборки часто ловят хеш-детекты. Добавь в исключения или используй исходник: <code>python enternal.py</code>.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Нужны API-ключи?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        Большинство функций работает без ключей. Опционально: VirusTotal (бесплатный ключ), VK (сервисный ключ), Discord webhook (для отправки результатов). Прога сама попросит при первом входе.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Куда отправляются данные?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        Никуда. Прога работает локально. Единственные внешние запросы — к публичным API (ip-api.com, GitHub и т.д.), плюс webhook если сам настроил. Никакой телеметрии, никакой аналитики.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Почему не показывает паспорт/адрес?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        Эти данные в закрытых реестрах (МВД, банки, операторы). Доступ только через суд. OSINT работает с открытыми источниками. Всё что утекло в паблик — прога найдёт. Всё что не утекло — нет.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Как собрать .exe самому?</span>
+        <span class="faq-icon"></span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        <div class="code-block">
+pip install pyinstaller
+pyinstaller --onefile --name="enternal" enternal.py
+        <button class="copy" onclick="copyCode(this)">Копировать</button>
+      </div>
+        Готовый файл появится в <code>dist/enternal</code>.
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  ENTERNAL V2 · открытые источники · <a href="https://t.me/Ang3locek">@Ang3locek</a>
+</footer>
+
+</div>
+
+<a class="float-tg" href="https://t.me/Ang3locek" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+</a>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// НАСТРОЙКА — ССЫЛКИ НА GITHUB RELEASES
+// Замени ТВОЙ_НИК на свой GitHub username
+// ═══════════════════════════════════════════════════════════
+const VERSION = "2.0";
+const DOWNLOADS = {
+  windows: "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.exe",
+  linux:   "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal",
+  mac:     "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.app.zip",
+  source:  "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.py",
+};
+// Проверка новой версии (опционально, оставь "" если не надо)
+const VERSION_URL = "https://raw.githubusercontent.com/ТВОЙ_НИК/enternal/main/version.txt";
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('dlWindows').href = DOWNLOADS.windows;
+document.getElementById('dlLinux').href = DOWNLOADS.linux;
+document.getElementById('dlMac').href = DOWNLOADS.mac;
+document.getElementById('dlSource').href = DOWNLOADS.source;
+document.getElementById('currentVersion').textContent = VERSION;
+
+function showTab(name, btn){
+  document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function toggleFaq(el){
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+function copyCode(btn){
+  const block = btn.parentElement;
+  const text = block.textContent.replace('Копировать', '').replace('✓', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = 'Копировать', 1500);
+  });
+}
+
+if (VERSION_URL && !VERSION_URL.includes('ТВОЙ_НИК')) {
+  fetch(VERSION_URL).then(r => r.text()).then(latest => {
+    latest = latest.trim();
+    if (latest && latest !== VERSION){
+      document.getElementById('currentVersion').textContent = latest;
+      document.getElementById('newVersionTag').style.display = 'inline-block';
+    }
+  }).catch(() => {});
+}
+</script>
+
+</body>
+</html>
