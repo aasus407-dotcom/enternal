@@ -1,0 +1,70 @@
+name: Build ENTERNAL
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests phonenumbers dnspython python-whois pytz pyinstaller
+
+      - name: Build binary
+        run: pyinstaller --onefile --name="enternal" enternal.py
+
+      - name: Rename Linux binary
+        if: matrix.platform == 'linux'
+        run: mv dist/enternal dist/enternal-linux
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enternal-${{ matrix.platform }}
+          path: dist/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: enternal-windows
+          path: ./windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: enternal-linux
+          path: ./linux
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            windows/enternal.exe
+            linux/enternal-linux
+            enternal.py
+          generate_release_notes: true
