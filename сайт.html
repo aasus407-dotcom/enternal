@@ -313,12 +313,6 @@
     <div class="dl-size" id="sizeLinux">~12 МБ</div>
   </a>
 
-  <a class="dl-card" href="#" id="dlMac" download>
-    <div class="dl-icon mac">⌘</div>
-    <div class="dl-name">macOS</div>
-    <div class="dl-desc">.app для macOS 12+. Apple Silicon и Intel.</div>
-    <div class="dl-size" id="sizeMac">~14 МБ</div>
-  </a>
 
   <a class="dl-card" href="#" id="dlSource" download>
     <div class="dl-icon src">📄</div>
@@ -521,13 +515,12 @@ pyinstaller --onefile --name="enternal" enternal.py
 // ═══════════════════════════════════════════════════════════
 const VERSION = "2.0";
 const DOWNLOADS = {
-  windows: "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.exe",
-  linux:   "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal",
-  mac:     "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.app.zip",
-  source:  "https://github.com/ТВОЙ_НИК/enternal/releases/download/v2.0/enternal.py",
+  windows: "https://github.com/aasus407-dotcom/enternal/releases/download/v2.0/enternal.exe",
+  linux:   "https://github.com/aasus407-dotcom/enternal/releases/download/v2.0/enternal-linux",
+  source:  "https://github.com/aasus407-dotcom/enternal/releases/download/v2.0/enternal.py",
 };
 // Проверка новой версии (опционально, оставь "" если не надо)
-const VERSION_URL = "https://raw.githubusercontent.com/ТВОЙ_НИК/enternal/main/version.txt";
+const VERSION_URL = "";
 // ═══════════════════════════════════════════════════════════
 
 document.getElementById('dlWindows').href = DOWNLOADS.windows;
