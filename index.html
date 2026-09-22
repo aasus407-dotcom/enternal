@@ -6,7 +6,7 @@
 <title>ENTERNAL V2 — OSINT инструмент</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0d10'/%3E%3Ctext x='50' y='72' font-family='monospace' font-size='60' font-weight='800' fill='%234a8dff' text-anchor='middle'%3EE2%3C/text%3E%3C/svg%3E">
 <meta property="og:title" content="ENTERNAL V2 — OSINT инструмент">
-<meta property="og:description" content="Сбор информации по открытым источникам. Телефон, ник, email, IP, домен, Telegram, VK, TikTok.">
+<meta property="og:description" content="Сбор информации по открытым источникам. Телефон, ник, email, IP, домен, Telegram, VK, TikTok, Discord.">
 <style>
   :root{
     --bg:#07090d; --bg2:#0d1219; --card:#10151e;
@@ -103,7 +103,6 @@
   }
   .dl-icon.win{background:linear-gradient(135deg,#0078d4,#00a4ef)}
   .dl-icon.linux{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
-  .dl-icon.mac{background:linear-gradient(135deg,#6b7280,#9ca3af)}
   .dl-icon.src{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
   .dl-name{font-size:16px;font-weight:700}
   .dl-desc{font-size:13px;color:var(--muted);line-height:1.5}
@@ -303,22 +302,21 @@
     <div class="dl-icon win">⊞</div>
     <div class="dl-name">Windows</div>
     <div class="dl-desc">.exe для Windows 10/11. Работает без Python.</div>
-    <div class="dl-size" id="sizeWin">~15 МБ</div>
+    <div class="dl-size" id="sizeWin">~16 МБ</div>
   </a>
 
   <a class="dl-card" href="#" id="dlLinux" download>
     <div class="dl-icon linux">🐧</div>
     <div class="dl-name">Linux</div>
     <div class="dl-desc">Один бинарник. Ubuntu, Debian, Arch.</div>
-    <div class="dl-size" id="sizeLinux">~12 МБ</div>
+    <div class="dl-size" id="sizeLinux">~27 МБ</div>
   </a>
 
-
-    <a class="dl-card" href="#" id="dlSource">
+  <a class="dl-card" href="#" id="dlSource" target="_blank" rel="noopener">
     <div class="dl-icon src">📄</div>
     <div class="dl-name">Исходник</div>
-    <div class="dl-desc"><div class="dl-desc">Открытый код на GitHub. Читай, форкай, изменяй под себя.</div>
-    <div class="dl-size" id="sizeSrc">~50 КБ</div>
+    <div class="dl-desc">Открытый код на GitHub. Читай, форкай, изменяй под себя.</div>
+    <div class="dl-size" id="sizeSrc">enternal.py</div>
   </a>
 </div>
 
@@ -367,13 +365,12 @@
 
 <section>
   <h2>Как запустить</h2>
-  <p class="sub2">Windows, Linux, macOS — один скрипт</p>
+  <p class="sub2">Windows, Linux — один файл</p>
 
   <div class="install-box">
     <div class="install-tabs">
       <button class="install-tab active" onclick="showTab('win', this)">Windows</button>
       <button class="install-tab" onclick="showTab('linux', this)">Linux</button>
-      <button class="install-tab" onclick="showTab('mac', this)">macOS</button>
       <button class="install-tab" onclick="showTab('source', this)">Исходник</button>
     </div>
 
@@ -389,39 +386,26 @@
     <div class="install-content" id="tab-linux">
       <p>Скачай бинарник, сделай исполняемым и запусти:</p>
       <div class="code-block">
-chmod +x enternal
-./enternal
+chmod +x enternal-linux
+./enternal-linux
         <button class="copy" onclick="copyCode(this)">Копировать</button>
       </div>
       <p>Или установи в систему:</p>
       <div class="code-block">
-sudo cp enternal /usr/local/bin/
+sudo cp enternal-linux /usr/local/bin/enternal
 enternal
         <button class="copy" onclick="copyCode(this)">Копировать</button>
       </div>
     </div>
 
-    <div class="install-content" id="tab-mac">
-      <p>Скачай .app, распакуй. Если macOS блокирует:</p>
-      <div class="code-block">
-xattr -d com.apple.quarantine enternal.app
-        <button class="copy" onclick="copyCode(this)">Копировать</button>
-      </div>
-      <p>Или запусти из терминала:</p>
-      <div class="code-block">
-./enternal.app/Contents/MacOS/enternal
-        <button class="copy" onclick="copyCode(this)">Копировать</button>
-      </div>
-    </div>
-
     <div class="install-content" id="tab-source">
-      <p>Скачай <strong>enternal.py</strong> и установи зависимости:</p>
+      <p>Код открыт на GitHub. Открой репозиторий, читай, форкай. Или скачай и запусти локально:</p>
       <div class="code-block">
 pip install requests phonenumbers dnspython python-whois pytz
 python enternal.py
         <button class="copy" onclick="copyCode(this)">Копировать</button>
       </div>
-      <p>Работает везде, где есть Python 3.10+.</p>
+      <p><a href="https://github.com/aasus407-dotcom/enternal/blob/main/enternal.py" target="_blank" style="color:var(--accent)">→ Открыть enternal.py на GitHub</a></p>
     </div>
   </div>
 </section>
@@ -509,23 +493,16 @@ pyinstaller --onefile --name="enternal" enternal.py
 </a>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// НАСТРОЙКА — ССЫЛКИ НА GITHUB RELEASES
-// Замени ТВОЙ_НИК на свой GitHub username
-// ═══════════════════════════════════════════════════════════
 const VERSION = "2.0";
 const DOWNLOADS = {
   windows: "https://github.com/aasus407-dotcom/enternal/releases/download/v2.0/enternal.exe",
   linux:   "https://github.com/aasus407-dotcom/enternal/releases/download/v2.0/enternal-linux",
   source:  "https://github.com/aasus407-dotcom/enternal/blob/main/enternal.py",
 };
-// Проверка новой версии (опционально, оставь "" если не надо)
 const VERSION_URL = "";
-// ═══════════════════════════════════════════════════════════
 
 document.getElementById('dlWindows').href = DOWNLOADS.windows;
 document.getElementById('dlLinux').href = DOWNLOADS.linux;
-document.getElementById('dlMac').href = DOWNLOADS.mac;
 document.getElementById('dlSource').href = DOWNLOADS.source;
 document.getElementById('currentVersion').textContent = VERSION;
 
@@ -552,7 +529,7 @@ function copyCode(btn){
   });
 }
 
-if (VERSION_URL && !VERSION_URL.includes('ТВОЙ_НИК')) {
+if (VERSION_URL) {
   fetch(VERSION_URL).then(r => r.text()).then(latest => {
     latest = latest.trim();
     if (latest && latest !== VERSION){
